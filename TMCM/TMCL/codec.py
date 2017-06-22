@@ -70,11 +70,12 @@ def encodeCommand(parameters, value, debug=False):
     byte_array += value
     chsum = checksum(byte_array)
     byte_array += [chsum]
-    
-    print(byte_array)
+    if debug:
+        print(byte_array)
 
     cmd = decodeBytes(byte_array)
-    print(("{0:0>18X}".format(cmd))) #http://www.python-course.eu/python3_formatted_output.php
+    if debug:
+        print(("{0:0>18X}".format(cmd))) #http://www.python-course.eu/python3_formatted_output.php
     
     return byte_array
 
@@ -96,7 +97,6 @@ def decodeCommand(cmd_string, keys):
     Fill dict with result according to keys
     """
     #byte_array = bytearray(cmd_string) #Old version working only with 2.7
-    bytearray=None
     if(type(cmd_string[0]) is str):
         byte_array = [ord(i) for i in cmd_string]
     elif(type(cmd_string[0]) is int):

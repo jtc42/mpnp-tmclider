@@ -26,7 +26,8 @@ class Device(object):
     def _query(self, request):
         """Encode and send a query. Recieve, decode, and return reply"""
         byte_array = codec.encodeRequestCommand(*request)
-        print("send to TMCL: ", byte_array)
+        if self._debug:
+            print("send to TMCL: ", byte_array)
         
         self._ser.write(byte_array)
         
@@ -34,7 +35,9 @@ class Device(object):
         
         tmp = list(rep.values())[:-1]
         tmp = codec.encodeReplyCommand(*tmp)
-        print("got from TMCL:", codec.hexString(tmp), rep)
+        
+        if self._debug:
+            print("got from TMCL:", codec.hexString(tmp), rep)
         
         return rep['status'], rep['value']
 
