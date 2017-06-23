@@ -40,6 +40,10 @@ class StepRocker(object):
     def get_speed(self, motor=0):
         value = self.TMCL.gap(motor, 3)
         return value
+    
+    def get_position(self, motor=0):
+        value = self.TMCL.gap(motor, 1)
+        return value
 
 
     def set_important_parameters(self,
@@ -76,13 +80,37 @@ class StepRocker(object):
         if blocking: # If blocking mode is active
             while self.get_speed() != 0: # While speed is not zero
                 continue # Stay inside this blocking while-loop
-                
+    
+    # Convert from angle to position
+    def ang2pos(self, angle):
+        return self.face*(angle/360)*self.spr + self.offset
+    def pos2ang(self, position):
+        return 360*(position - self.offset)/(self.face*self.spr)
+    
+    # Handle angular movements/values
     def angle(self, angle, motor=0, blocking=False):
-        position = self.face*(angle/360)*self.spr + self.offset
+        position = self.ang2pos(angle)
         self.TMCL.mvp(motor, 'ABS', position)
         if blocking: # If blocking mode is active
             while self.get_speed() != 0: # While speed is not zero
                 continue # Stay inside this blocking while-loop
+    
+    def get_angle(self, motor=0):
+        position = self.get_position(motor=motor)
+        angle = self.pos2ang(position)
+        return angle
+    
+    # Handle updating of offset
+    def set_offset(self):
+        position = self.get_position()
+        print("Setting offset position: {}".format(position))
+        self.offset = position
+    
+    # Handle updating offset from angle
+    def set_offset_angle(self, angle):
+        position = self.ang2pos(angle)
+        print("Setting offset angle: {}, position: {}".format(angle, position))
+        self.offset = position
 
     def stop(self, motor=0):
         self.TMCL.mst(motor)

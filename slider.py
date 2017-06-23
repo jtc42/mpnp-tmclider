@@ -4,13 +4,41 @@ import TMCM
 # Slider motor settings
 # [thick ring, thin ring]
 COMS = ['COM3', 'COM5'] # List of COM ports to use
-OFFSETS = [16000,44500] # Positional offsets for each motor
+# Default motor calibration
+OFFSETS = [0,0] # Positional offsets for each motor
 SPR = [102800, 102800] # Steps per revolution
-FACES = [-1, 1]
+FACES = [1, -1]
 
+## CREATE MOTORS
 print("Creating motor objects...")
 motors = [TMCM.StepRocker(port=COM, debug=False) for COM in COMS] # Create list of motor objects
 
+          
+## LOAD/SAVE
+
+import pickle
+
+def load_prefs():
+    global OFFSETS, SPR, FACES
+    print("Loading preferences...")
+    OFFSETS, SPR, FACES = pickle.load(open("prefs.pickle", "rb"))
+
+def save_prefs():
+    global motors
+    OFFSETS = [motor.offset for motor in motors]
+    SPR = [motor.spr for motor in motors]
+    FACES = [motor.face for motor in motors]
+    print("Saving preferences...")
+    pickle.dump([OFFSETS, SPR, FACES], open("prefs.pickle", "wb"))
+
+try:
+    print("Loading preferences...")
+    load_prefs()
+except (OSError, IOError) as e:
+    print("No preferences file found. Creating one...")
+    save_prefs()
+
+# Assign motor calibration
 print("Assigning angular calibration properties to motors...")         
 for i, motor in enumerate(motors):
     motor.offset = OFFSETS[i]

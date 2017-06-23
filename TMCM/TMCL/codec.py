@@ -1,7 +1,6 @@
 
 from collections import OrderedDict
 
-
 from .error import *
 
 COMMAND_STRING_LENGTH = 9
