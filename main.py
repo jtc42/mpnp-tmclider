@@ -34,8 +34,6 @@ class MainFrame(gui.MainFrame):
     ## Waveplate controls
         
     def OnRadioBox_QWP(self, event):
-        print(self.m_radioBox_qwp.GetSelection())
-
         if self.m_radioBox_qwp.GetSelection() != 2:
             self.m_spinCtrl_qwp.Disable()
             self.m_button_qwpzero.Disable()
