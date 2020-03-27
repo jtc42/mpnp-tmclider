@@ -14,6 +14,7 @@ class StepRocker(object):
         self.face = 1 # 1 or -1 based on motor orientation
 
 
+
     def get_globals(self):
         ret = {}
         for key, value in TMCL.GLOBAL_PARAMETER.items():
@@ -76,25 +77,42 @@ class StepRocker(object):
             self.TMCL.mst(motor)
 
     def move(self, position, cmdtype='ABS', motor=0, blocking=False):
+        #print(f"Moving to {position}")
         self.TMCL.mvp(motor, cmdtype, position)
         if blocking: # If blocking mode is active
             while self.get_speed() != 0: # While speed is not zero
                 continue # Stay inside this blocking while-loop
     
-    # Convert from angle to position
-    def ang2pos(self, angle):
-        return self.face*(angle/360)*self.spr + self.offset
-    def pos2ang(self, position):
-        return 360*(position - self.offset)/(self.face*self.spr)
     
-    # Handle angular movements/values
-    def angle(self, angle, motor=0, blocking=False):
-        position = self.ang2pos(angle)
-        self.TMCL.mvp(motor, 'ABS', position)
-        if blocking: # If blocking mode is active
+    def backlashMove(self, position, cmdtype='ABS' , motor=0, blocking =False, backlash = 10000):
+        if cmdtype == "ABS":  # Backlash compensation currently requires absolute positioning
+            #print(f"Moving to {position+backlash}")
+            self.TMCL.mvp(motor, cmdtype, position + backlash)
+            # We need to block until the backlash move has finished
             while self.get_speed() != 0: # While speed is not zero
                 continue # Stay inside this blocking while-loop
+
+
+    # Convert from angle to position
+    def ang2pos(self, angle):
+        position = round(self.face*(angle/360)*self.spr + self.offset)
+        print("position = ", position)
+        return position
+        
+    def pos2ang(self, position):
+        angle = round(360*(position - self.offset)/(self.face*self.spr))
+        print ("angle = ", angle)
+        return angle
     
+    # Handle angular movements/values
+    def angle(self, angle, **kwargs):
+        position = self.ang2pos(angle)
+        self.move(position, **kwargs)
+
+    def backlashAngle(self, angle, **kwargs):
+        position = self.ang2pos(angle)
+        self.backlashMove(position, **kwargs)    
+
     def get_angle(self, motor=0):
         position = self.get_position(motor=motor)
         angle = self.pos2ang(position)
@@ -105,12 +123,14 @@ class StepRocker(object):
         position = self.get_position()
         print("Setting offset position: {}".format(position))
         self.offset = position
+        print("Offset set to = ", self.offset)
     
     # Handle updating offset from angle
     def set_offset_angle(self, angle):
         position = self.ang2pos(angle)
         print("Setting offset angle: {}, position: {}".format(angle, position))
         self.offset = position
+        print("Offset angle set to = ", self.offset)
 
     def stop(self, motor=0):
         self.TMCL.mst(motor)
