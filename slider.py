@@ -2,12 +2,13 @@ import time
 import TMCM
 
 # Slider motor settings
-# [thick ring, thin ring]
-COMS = ['COM3', 'COM5'] # List of COM ports to use
+# [POL, QWP]
+COMS = ['COM5', 'COM4'] # List of COM ports to use
 # Default motor calibration
-OFFSETS = [0,0] # Positional offsets for each motor
-SPR = [102800, 102800] # Steps per revolution
+OFFSETS = [11972, 15500] # Positional offsets for each motor
+SPR = [71050, 71050] # Steps per revolution
 FACES = [1, -1]
+
 
 ## CREATE MOTORS
 print("Creating motor objects...")
@@ -22,6 +23,9 @@ def load_prefs():
     global OFFSETS, SPR, FACES
     print("Loading preferences...")
     OFFSETS, SPR, FACES = pickle.load(open("prefs.pickle", "rb"))
+    print("Offset = ", OFFSETS)
+    print("Spr = ", SPR)
+    print("Faces = ", FACES)
 
 def save_prefs():
     global motors
@@ -30,6 +34,10 @@ def save_prefs():
     FACES = [motor.face for motor in motors]
     print("Saving preferences...")
     pickle.dump([OFFSETS, SPR, FACES], open("prefs.pickle", "wb"))
+    print("Offset = ", OFFSETS)
+    print("Spr = ", SPR)
+    print("Faces = ", FACES)
+    print("Preferences saved.")
 
 try:
     print("Loading preferences...")
@@ -44,6 +52,7 @@ for i, motor in enumerate(motors):
     motor.offset = OFFSETS[i]
     motor.spr = SPR[i]
     motor.face = FACES[i]
+
 
 # Set key global parameters
 print("Assigning global parameters to motors...")  
@@ -73,6 +82,10 @@ def test_motors(motor_objects):
             time.sleep(0.1) # Wait for 0.1 seconds
 
 def home_motors(motor_objects, blocking=True):
+    for motor in motors:
+        motor.backlashMove(0, cmdtype='ABS')
+    while any([motor.get_speed()!=0 for motor in motor_objects]): # While any motors are moving
+        continue # Stay in this blocking loop
     for motor in motors:
         motor.move(0, cmdtype='ABS')
     while any([motor.get_speed()!=0 for motor in motor_objects]): # While any motors are moving

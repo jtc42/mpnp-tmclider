@@ -25,10 +25,15 @@ class MainFrame(gui.MainFrame):
     def OnSpin_pol(self, event):
         selected_angle = self.m_spinCtrl_pol.GetValue()
         print("Polariser angle: {}".format(selected_angle))
+        qwp_angle = qwp.get_angle()
+        pol.backlashAngle(selected_angle)
+        qwp.backlashAngle(qwp_angle)
+        qwp.angle(qwp_angle)
         pol.angle(selected_angle)
         
     def OnButtonClick_polzero(self, event):
-        pol.set_offset()
+        selected_angle = self.m_spinCtrl_pol.GetValue()
+        pol.set_offset_angle(selected_angle)
         self.m_spinCtrl_pol.SetValue(0)
         
     ## Waveplate controls
@@ -44,22 +49,37 @@ class MainFrame(gui.MainFrame):
             
             # Set QWP to custom angle
             selected_angle = self.m_spinCtrl_qwp.GetValue()
+            pol_angle = pol.get_angle()
+            qwp.backlashAngle(selected_angle)
+            pol.backlashAngle(pol_angle)
+            pol.angle(pol_angle)
             qwp.angle(selected_angle)
         
         # If RCP or LCP, set accordingly
         pol_angle = pol.get_angle()
+        pol.backlashAngle(pol_angle)
         if self.m_radioBox_qwp.GetSelection() == 0:
+            qwp.backlashAngle(pol_angle-45)
             qwp.angle(pol_angle-45)
+            pol.angle(pol_angle)
+
         elif self.m_radioBox_qwp.GetSelection() == 1:
+            qwp.backlashAngle(pol_angle+45)
             qwp.angle(pol_angle+45)
-            
+            pol.angle(pol_angle)
+
     def OnSpin_qwp(self, event):
         selected_angle = self.m_spinCtrl_qwp.GetValue()
         print("Waveplate angle: {}".format(selected_angle))
+        pol_angle = pol.get_angle()
+        qwp.backlashAngle(selected_angle)
+        pol.backlashAngle(pol_angle)
+        pol.angle(pol_angle)
         qwp.angle(selected_angle)
     
     def OnButtonClick_qwpzero(self, event):
-        qwp.set_offset()
+        selected_angle = self.m_spinCtrl_qwp.GetValue()
+        qwp.set_offset_angle(selected_angle)
         self.m_spinCtrl_qwp.SetValue(0)
         
     def OnButtonclick_saveconfig(self, event):
